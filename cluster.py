@@ -5,7 +5,7 @@ class cluster:
         self.k = k
         self.max_iterations = max_iterations
 
-    def fit(self, X):
+    def fit(self, X, balanced=False):
         X = np.array(X)
         n, d = X.shape
 
@@ -15,7 +15,16 @@ class cluster:
         for _ in range(self.max_iterations):
             clusters = np.argmin(np.linalg.norm(X[:, np.newaxis] - centroids, axis=2), axis=1)
 
-            new_centroids = [np.mean(X[np.array(clusters) == i], axis=0) for i in range(self.k)]
+            if balanced:
+                new_centroids = np.zeros_like(centroids)
+                for i in range(self.k):
+                    cluster_instances = X[clusters == i]
+                    if len(cluster_instances) > 0:
+                        new_centroids[i] = cluster_instances.mean(axis=0)
+                    else:
+                        new_centroids[i] = centroids[i]
+            else:
+                new_centroids = np.array([X[clusters == i].mean(axis=0) for i in range(self.k)])
 
             if np.all(np.equal(centroids, new_centroids)):
                 break
